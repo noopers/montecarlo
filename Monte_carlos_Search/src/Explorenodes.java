@@ -22,9 +22,9 @@ public class Explorenodes {
 	/**
 	 * @param args
 	 */;
-	public int expandon=20;//when to expand
+	public int expandon=30;//when to expand
 	StarterPacMan  pacmanstrategy;
-	public int maximumSimulationLength=10000000;
+	public int maximumSimulationLength=1000000;
 	Stack<Game> states;
 	 Game game;
 
@@ -75,12 +75,16 @@ public treenode bestnode (){
 	whichnode=rootnode;
 	double max=Double.NEGATIVE_INFINITY;
 	//use ghost postion
-	whichnode=whichnode.getChild(game);
+	//whichnode=whichnode.getChild(game);
+
 	if(whichnode.getChildren()!=null){
-		
+	
 		
 		for(treenode child:whichnode.getChildren()){
+			//System.out.println("yes111111"+" "+child.getAverageScore()+" "+child.getMove());
 	if(child.getAverageScore()>max){
+	
+		
 		max=child.getAverageScore();
 		bestnode=child;
 		
@@ -99,9 +103,9 @@ public Collection<treenode> getPacManChildren()
 	
 	//figure out which collection of children to return
 	//if (parameters.useGhostPositions)
-		children = rootnode.getChild(game).getChildren();
+	//	children = rootnode.getChild(game).getChildren();
 	//else
-		//children = rootNode.getChildren();
+		children = rootnode.getChildren();
 	
 	//if there is no children, return an empty list instead of null
 	if (children != null)
@@ -186,32 +190,38 @@ public void run() {
 	treenode  node =rootnode;
 	markednode.add(node);
 	
-	advanceGameToNextNode();
-	
+	//advanceGameToNextNode();
+	//System.out.println("sdvsdvsdv");
 	//advance the game
 	///if(use ghost positions )
-	node =node.getChild(game);
+	//node =node.getChild(game);
 	while(node.isleaf()==false){
 		
+		//System.out.println(node);
+
 		
 		node=sp.Select(node);
+		//System.out.println(node);
 		//node=selectionalgo.selectbestucbchild   
 		//if game over returns
 		if(node==null){
+			System.out.println("www");
 			return;
+			
+			
 		}
 		
 		markednode.add(node);
-		
+		//node.numberOfVisits++;
 		///node.getmove gives the move which lead to this node 
 		playmove(node.getMove());
 		//advance game further
-		advanceGameToNextNode();
+	//	advanceGameToNextNode();
 		//use ghost also
 		
 		
 		
-		node=node.getChild(game);
+	//	node=node.getChild(game);
 	
 		
 		
@@ -220,13 +230,13 @@ public void run() {
 	
 	//only one node ie root node or in simulation we have sampled it enough number of time then expand it
 	
-	System.out.println(node.getnumberofvisit());
+
+//	System.out.println(node.getnumberofvisit());
 	
 	if(node.getnumberofvisit()>=expandon ||node==rootnode)
-	{
-		node.expand(game);
+	{	;node.expand(game);
 		//////evaluate all childs after expanding do the following that is evaluate childrens 
-		System.out.println("//yes");
+		System.out.println("//yes--------------------------------");
 		//node.getchildren return all child on which we will now do estimation 
 		for(treenode child:node.getChildren()){
 			int cmpowerpills=game.getNumberOfActivePowerPills();
@@ -238,23 +248,25 @@ public void run() {
 			
 			playmove(child.getMove());
 			//advance game;
-			advanceGameToNextNode();
+	//		advanceGameToNextNode();
 			
 			if(cmpowerpills>game.getNumberOfActivePowerPills()){
 				child.setactivepowerpill(true);
+				child.addscorebonus(200);
 			}
 			
 
 			if(anypill>game.getNumberOfActivePills()){
 				child.setanypill(true);
+				child.addscorebonus(100);
 			}
 			
 int points =0;
 			if(game.getCurrentLevel()>level){
-			points=points +300;
+			points=points +3000;
 			}
 			//use ghost pos 
-			child=child.getChild(game);
+			
 			//run further simuations on these childs 
 			points =points +runlocalsimulations(markednode,lives);
 			
@@ -279,7 +291,7 @@ int points =0;
 		
 		
 		//use ghost
-		node=node.getChild(game);
+	//	node=node.getChild(game);
 		
 	}	
 	
@@ -296,6 +308,9 @@ int points =0;
 	}
 finally{
 	game=states.pop();
+	
+		//System.out.println("hero");
+	
 }	
 	
 	//even in case it return on becoming null it should return 
@@ -314,6 +329,7 @@ private int runlocalsimulations(Vector<treenode> markednode, int lives) {
 	
 	for(treenode child:markednode){
 		child.updatescores(sc);
+		//System.out.println("see"+" "+sc+" "+System.currentTimeMillis());
 	}
 	return sc;
 }
@@ -324,7 +340,7 @@ private int roolout() {
 	
 	int level=game.getCurrentLevel();
 	int le=0;
-	while(le<maximumSimulationLength&&game.gameOver()==false&&game.getCurrentLevel()==level){
+	while(le<100&&game.gameOver()==false&&game.getCurrentLevel()==level){
 		le++;
 		
 		game.advanceGame(pacmanstrategy.getMove(game, 0), ghoststrategy.getMove(game, 0));
@@ -334,21 +350,6 @@ private int roolout() {
 	
 }
 
-public void advanceGameToNextNode()
-{
-	MOVE move = game.getPacmanLastMoveMade();
-	
-	//save the ghost edible score so we can easily detect when a ghost is eaten
-	int edibleScore = game.getGhostCurrentEdibleScore();
-	
-	while (!isAtNode(edibleScore))
-	{
-		//advance the game
-		//opponent models that care about the amount of time they have to return an answer won't work here
-		//but we can't allow lengthy simulations to run for ghost behaviour or we'll run out of time
-		game.advanceGame(move, ghoststrategy.getMove(game, 0));
-	}
-}
 
 
 /**
@@ -362,37 +363,13 @@ public void advanceGameToNextNode()
  * @return
  */
 
-public boolean isAtNode(int edibleScore)
-{
-	int nodeIndex = game.getPacmanCurrentNodeIndex();
-	
-	boolean eatghost=true;
-	boolean ghostuse=true;
-	return game.gameOver() 
-		|| game.isJunction(nodeIndex)
-		|| activePowerPills.contains(nodeIndex)
-		|| againstWall()
-		|| (eatghost&& ghostuse && game.getGhostCurrentEdibleScore() != edibleScore);
-}
+
 
 
 /**
  * Determines if Ms. Pac-Man has ran into a wall based on the direction she was previously going in.
  * @return
  */
-public boolean againstWall()
-{
-	MOVE move = game.getPacmanLastMoveMade();
-	MOVE[] possibleMoves = game.getPossibleMoves(game.getPacmanCurrentNodeIndex());
-	
-	for (int i = 0; i < possibleMoves.length; i++)
-	{
-		if (possibleMoves[i] == move)
-			return false;
-	}
-	
-	return true;
-}
 
 
 
@@ -446,7 +423,7 @@ class treenode {
 	
 	
 	private MOVE move;
-	private int totalScore, numberOfVisits, scoreBonus;//for ucb and samping threshold
+	int totalScore, numberOfVisits, scoreBonus;//for ucb and samping threshold
 	private treenode  parent;
 	private Map<Object, treenode > children;
 	private int nodeIndex;//current position of pacman when reaches this node 
@@ -462,7 +439,7 @@ class treenode {
 	public treenode ()
 	{
 		totalScore = 0;
-		numberOfVisits = 0;
+		numberOfVisits = 1;
 		move = MOVE.NEUTRAL;
 		nodeIndex = -1;
 		scoreBonus = 0;
@@ -531,6 +508,7 @@ public void addscorebonus(int bonus){
 		MOVE poss[]=game.getPossibleMoves(game.getPacmanCurrentNodeIndex());
 		children=new HashMap<Object,treenode>(poss.length);
 		for(int i=0;i<poss.length;i++){
+		//	System.out.println("dgbdgb"+" "+poss[i]);
 			children.put(poss[i], new treenode(this,poss[i]));
 		}
 		
@@ -603,31 +581,6 @@ public void addscorebonus(int bonus){
 		// TODO Auto-generated method stub
 		return 	children.get(move);
 		
-	}
-	public treenode getChild(Game game) {
-		// TODO Auto-generated method stub
-		treenode node=null; 
-		long pos =getGhostPositions(game);
-		if(children==null){
-			children=new HashMap<Object, treenode>();
-		}
-		
-		else{
-			node =children.get(pos);
-			if(node!=null){
-				node.numberOfVisits++;
-				return node;
-			}
-			else{
-				
-			}
-		}
-		
-		node=new treenode(this,MOVE.NEUTRAL);
-		node.numberOfVisits++;
-		children.put(pos, node);
-		
-		return node;
 	}
 	
 	

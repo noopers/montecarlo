@@ -13,7 +13,7 @@ import pacman.game.Game;
 public class ourController  extends Controller<MOVE>{
 //number of time simulations runs for
 	
-public int deathPenalty;
+public int deathPenalty=100000;
 	
 public int levelcompletebonus;
 	boolean discardtree=true;
@@ -46,6 +46,8 @@ public ourController() {
 	public MOVE getMove(Game game, long timetomakemove) {
 		// TODO Auto-generated method stub
 	
+		//System.out.println(timetomakemove);
+		
 		MOVE move=MOVE.NEUTRAL;
 		
 		
@@ -91,42 +93,41 @@ public ourController() {
 		///////////////////22222222222
 		
 		
-		if (explore.isAtNode(lastEdibleScore))
-		{
 			timetomakemove-=20;
-		}
 		
 		
 		
+		int cn=0;
 		
 		if(simulatecount==-1){
 			
 			long t=System.currentTimeMillis();
-			while(t<timetomakemove-2){
+			while(cn<10){
 				
 				//run simulation  on this current state to se as far as possible on the basis of average values
-				
+				cn++;
 				explore.run();
-			t=System.currentTimeMillis();	
+			
 			}
 		}
+	//	System.out.println(cn);
 //System.out.println(		System.currentTimeMillis()+" "+timetomakemove);
 		
-		if(move==MOVE.NEUTRAL&&explore.isAtNode(lastEdibleScore)){
+		if(move==MOVE.NEUTRAL){
 			
-			
+			System.out.println("///////////////////////////////////////////");	
 			//run till simulation count;
 			
 			
-			runAdditionalEvaluators();
+		runAdditionalEvaluators();
 			treenode bestnode;
 			bestnode=explore.bestnode();
 			if(bestnode==null&&ghostuse){
 				//doubt
-				move=explore.getneutralbestmove();
+			//	move=explore.getneutralbestmove();
 			}
 			else{
-				System.out.println("wow");
+			//	System.out.println("wow");
 				
 				move=bestnode.getMove();
 			}
@@ -154,14 +155,14 @@ public ourController() {
 		}
 		
 		lastEdibleScore=game.getGhostCurrentEdibleScore();
-		
+	/*	
 		if(move==MOVE.NEUTRAL&&Math.random()<0.2){
 			int currpacmanpos=game.getPacmanCurrentNodeIndex();
 			MOVE arr[]=game.getPossibleMoves(currpacmanpos);
 	        int mv=(int)(Math.random()*arr.length);
             move=arr[mv];
             lastEdibleScore=game.getGhostCurrentEdibleScore();
-		}
+		}*/
 		return move;
 	}
 

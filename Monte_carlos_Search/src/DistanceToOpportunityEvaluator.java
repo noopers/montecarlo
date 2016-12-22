@@ -8,10 +8,6 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
-/**
- * A tree evaluator which increases the score of the node which brings the
- * Ms. Pac-Man closer to eating a pill.
- */
 public class DistanceToOpportunityEvaluator implements ITreeEvaluator
 {
 	private static final int DEFAULT_GHOST_SCORE = 400;
@@ -32,7 +28,7 @@ public class DistanceToOpportunityEvaluator implements ITreeEvaluator
 	@Override
 	public void evaluateTree(Explorenodes simulator)
 	{
-		//get the children of the root node, if there isn't any we can't make any decisions
+		
 		Collection<treenode> children = simulator.getPacManChildren();
 
 		if (children.size() == 0)
@@ -41,7 +37,6 @@ public class DistanceToOpportunityEvaluator implements ITreeEvaluator
 		//get the current game state
 		Game game = simulator.getGameState();
 
-		//get the move towards the nearest edible ghost if there is one, and give it a bonus of [ghostScore]
 		MOVE ghostMove = getMoveTowardsEdibleGhost(game);
 
 		if (ghostMove != MOVE.NEUTRAL)
@@ -54,16 +49,9 @@ public class DistanceToOpportunityEvaluator implements ITreeEvaluator
 		addBonus(children, pillMove, pillScore);
 	}
 
-
-	/**
-	 * Finds the closest edible ghost and returns the move which moves PacMan towards it; if no ghosts are edible,
-	 * MOVE.NEUTRAL is returned instead.
-	 * @param game
-	 * @return
-	 */
 	private MOVE getMoveTowardsEdibleGhost(Game game)
 	{
-		//inspired by StarterPacMan
+	
 		int currentIndex = game.getPacmanCurrentNodeIndex();
 		int min = Integer.MAX_VALUE;
 		int closestGhostIndex = -1;
@@ -96,14 +84,9 @@ public class DistanceToOpportunityEvaluator implements ITreeEvaluator
 	}
 
 
-	/**
-	 * Gets the move which moves PacMan closer to the nearest pill.
-	 * @param game
-	 * @return
-	 */
 	private MOVE getMoveTowardsPill(Game game)
 	{
-		//inspired by StarterPacMan
+		
 		int currentIndex = game.getPacmanCurrentNodeIndex();
 		int[] pills = game.getActivePillsIndices();
 		int closestIndex = game.getClosestNodeIndexFromNodeIndex(currentIndex, pills, DM.PATH);
@@ -111,13 +94,6 @@ public class DistanceToOpportunityEvaluator implements ITreeEvaluator
 		return game.getNextMoveTowardsTarget(currentIndex, closestIndex, DM.PATH);
 	}
 
-
-	/**
-	 * Adds the specified amount onto the score of the child node which represents the given move.
-	 * @param children
-	 * @param move
-	 * @param score
-	 */
 	private void addBonus(Collection<treenode> children, MOVE move, int bonus)
 	{
 		for (treenode node: children)
